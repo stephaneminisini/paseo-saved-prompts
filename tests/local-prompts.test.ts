@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { z } from "zod";
 import {
   deletePrompt,
   type PromptDraft,
@@ -82,6 +83,19 @@ describe("upsertPrompt", () => {
         updatedAt: "2026-11-07T00:00:00.000Z",
       },
     ]);
+  });
+});
+
+describe("saving through the host", () => {
+  // The host parses with the schema, then requires plain JSON (z.json), which rejects undefined.
+  it("stores a prompt without a description as valid JSON", () => {
+    const prompts = upsertPrompt([], draft({ name: "Open PRs", description: "" }), {
+      editingId: null,
+      newId: "p1",
+      now: "2026-11-06T00:00:00.000Z",
+    });
+    const parsed = localPromptsSettings.schema.parse({ prompts });
+    expect(z.json().safeParse(parsed).success).toBe(true);
   });
 });
 

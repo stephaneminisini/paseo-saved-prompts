@@ -36,9 +36,10 @@ export function upsertPrompt(
   options: UpsertOptions,
 ): LocalPrompt[] {
   const description = draft.description.trim();
+  // Omit an empty description: the host stores plain JSON, which rejects undefined values.
   const fields = {
     name: draft.name.trim(),
-    description: description.length > 0 ? description : undefined,
+    ...(description.length > 0 ? { description } : {}),
     text: draft.text,
     updatedAt: options.now,
   };
