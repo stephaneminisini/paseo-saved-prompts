@@ -20,8 +20,8 @@ Choose the storage in the plugin settings.
 
 ## Langfuse setup
 
-The base URL defaults to Langfuse Cloud (EU, `https://cloud.langfuse.com`); change it for the US
-region (`https://us.cloud.langfuse.com`) or a self-hosted instance. Set the label in the plugin
+The base URL defaults to Langfuse Cloud (US, `https://us.cloud.langfuse.com`); change it for the
+EU region (`https://cloud.langfuse.com`) or a self-hosted instance. Set the label in the plugin
 settings. The plugin reads your Langfuse keys
 from a file on the daemon machine, never from the app or the settings. By default the file is
 `~/.config/paseo-saved-prompts/langfuse.env`:

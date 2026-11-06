@@ -35,8 +35,8 @@ is refused.
 Open **Settings > Plugins > Saved Prompts > Storage**:
 
 1. Choose **Local** or **Langfuse**.
-2. For Langfuse, check the base URL and the label. The URL defaults to Langfuse Cloud EU
-   (`https://cloud.langfuse.com`); use `https://us.cloud.langfuse.com` for the US region or your
+2. For Langfuse, check the base URL and the label. The URL defaults to Langfuse Cloud US
+   (`https://us.cloud.langfuse.com`); use `https://cloud.langfuse.com` for the EU region or your
    own URL when self-hosted.
 3. Save, then use **Test connection**.
 

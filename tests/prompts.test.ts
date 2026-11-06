@@ -25,7 +25,7 @@ describe("configSettings", () => {
   it("defaults to local storage with the production label", () => {
     expect(configSettings.schema.parse({})).toEqual({
       mode: "local",
-      langfuseBaseUrl: "https://cloud.langfuse.com",
+      langfuseBaseUrl: "https://us.cloud.langfuse.com",
       langfuseLabel: "production",
       keyFilePath: "~/.config/paseo-saved-prompts/langfuse.env",
     });

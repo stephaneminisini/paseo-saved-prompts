@@ -77,8 +77,8 @@ function StorageForm({ settings, theme }: { settings: ReadyConfig } & Pick<Plugi
         <SettingsCard>
           <SettingsInput
             label="Base URL"
-            hint="Langfuse Cloud EU by default. US: https://us.cloud.langfuse.com. Self-hosted: your instance URL."
-            placeholder="https://cloud.langfuse.com"
+            hint="Langfuse Cloud US by default. EU: https://cloud.langfuse.com. Self-hosted: your instance URL."
+            placeholder="https://us.cloud.langfuse.com"
             initialValue={draft.langfuseBaseUrl}
             disabled={settings.saving}
             onChangeText={(langfuseBaseUrl) => update({ langfuseBaseUrl })}
