@@ -1,8 +1,11 @@
 {
   "id": "saved-prompts",
-  "media": [],
+  "name": "Saved Prompts",
+  "description": "Save prompts locally or in Langfuse and attach them when starting a workspace.",
+  "media": [
+    "assets/screenshot.png"
+  ],
   "requirements": {
     "paseo": ">=0.15.0"
-  },
-  "name": "Saved Prompts"
+  }
 }
