@@ -1,0 +1,8 @@
+{
+  "id": "saved-prompts",
+  "media": [],
+  "requirements": {
+    "paseo": ">=0.15.0"
+  },
+  "name": "Saved Prompts"
+}
