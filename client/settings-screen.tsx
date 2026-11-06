@@ -10,6 +10,7 @@ import {
 } from "@getpaseo/plugin/client/ui";
 import { useEffect, useState } from "react";
 import { Text } from "react-native";
+import { isConfigDirty } from "../shared/config-form";
 import { testLangfuseRpc } from "../shared/prompts";
 import { type Config, configSettings, type StorageMode } from "../shared/settings";
 
@@ -38,11 +39,11 @@ function StorageForm({ settings, theme }: { settings: ReadyConfig } & Pick<Plugi
     setDraft((current) => ({ ...current, ...patch }));
   }
 
-  // Adopt a newer revision once its values match the draft, which is the case after our own save.
-  const saved = JSON.stringify(settings.values);
+  const dirty = isConfigDirty(draft, settings.values);
+  // Adopt a newer revision once the saved values match the draft, as after our own save.
   useEffect(() => {
-    if (saved === JSON.stringify(draft)) setRevision(settings.revision);
-  }, [saved, settings.revision, draft]);
+    if (!dirty) setRevision(settings.revision);
+  }, [dirty, settings.revision]);
 
   async function save() {
     await settings.save(draft, revision);
@@ -57,8 +58,6 @@ function StorageForm({ settings, theme }: { settings: ReadyConfig } & Pick<Plugi
       setTest({ status: "failed", message: error instanceof Error ? error.message : String(error) });
     }
   }
-
-  const dirty = JSON.stringify(draft) !== JSON.stringify(settings.values);
 
   return (
     <>
