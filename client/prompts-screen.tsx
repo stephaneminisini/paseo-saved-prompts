@@ -5,6 +5,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { Text, View } from "react-native";
 import { listPromptsRpc, type SavedPrompt } from "../shared/prompts";
+import { resolvePromptsView } from "../shared/prompts-view";
 import { configSettings, type LocalPrompt, localPromptsSettings } from "../shared/settings";
 import { ActionButton } from "./action-button";
 import { PromptEditor } from "./prompt-editor";
@@ -28,7 +29,8 @@ export function createPromptsScreen({ openSettings }: PromptsScreenOptions) {
     const label = config.status === "ready" ? config.values.langfuseLabel : "";
     const query = useQuery({
       queryKey: ["prompts", mode, label, localPrompts.status === "ready" ? localPrompts.revision : null],
-      queryFn: () => listPrompts({}),
+      // The Prompts screen always reads fresh; the picker reuses the 60 s server cache.
+      queryFn: () => listPrompts({ fresh: true }),
       enabled: mode !== null,
     });
     const [editor, setEditor] = useState<EditorTarget | null>(null);
@@ -52,30 +54,46 @@ export function createPromptsScreen({ openSettings }: PromptsScreenOptions) {
       if (saved) void queryClient.invalidateQueries({ queryKey: ["prompts"] });
     }
 
+    const view = resolvePromptsView({
+      config:
+        config.status === "ready"
+          ? { status: "ready", mode: config.values.mode, label }
+          : config.status === "loading"
+            ? { status: "loading" }
+            : { status: config.status, error: config.error },
+      query: query.isError
+        ? { status: "error", message: query.error.message }
+        : query.isSuccess
+          ? { status: "success", count: query.data.prompts.length }
+          : { status: "pending" },
+    });
+
     let body;
-    if (config.status === "loading" || mode === null || query.isPending) {
+    if (view.kind === "loading") {
       body = <Text style={muted}>Loading prompts…</Text>;
-    } else if (config.status === "error" || config.status === "invalid") {
-      body = <Text style={text}>{config.error}</Text>;
-    } else if (query.isError) {
+    } else if (view.kind === "config-error" || view.kind === "query-error") {
       body = (
         <View style={{ gap: 12 }}>
-          <Text style={text}>{query.error.message}</Text>
+          <Text style={text}>{view.message}</Text>
           <View style={{ flexDirection: "row" }}>
-            <ActionButton label="Retry" theme={theme} onPress={() => void query.refetch()} />
+            <ActionButton
+              label="Retry"
+              theme={theme}
+              onPress={() =>
+                void (view.kind === "config-error" && config.status !== "ready" && config.status !== "loading"
+                  ? config.reload()
+                  : query.refetch())
+              }
+            />
           </View>
         </View>
       );
-    } else if (query.data.prompts.length === 0) {
-      body = (
-        <Text style={muted}>
-          {mode === "local" ? "No saved prompts yet." : `No text prompts with label ${label}.`}
-        </Text>
-      );
+    } else if (view.kind === "empty") {
+      body = <Text style={muted}>{view.message}</Text>;
     } else {
       body = (
         <PromptList
-          prompts={query.data.prompts}
+          prompts={query.data?.prompts ?? []}
           theme={theme}
           subtitle={(prompt) =>
             mode === "langfuse" ? `v${prompt.version} · ${label}` : prompt.description

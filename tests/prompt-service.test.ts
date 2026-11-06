@@ -125,3 +125,53 @@ describe("testLangfuse", () => {
     await expect(createPromptService(d).testLangfuse()).resolves.toEqual({ projectName: "Acme" });
   });
 });
+
+describe("langfuse caching", () => {
+  function counting(clock: { now: number }) {
+    let listCalls = 0;
+    const base = deps({
+      config: { mode: "langfuse", langfuseBaseUrl: "https://lf.example.com" },
+      remote: [
+        { id: "a@1", name: "Alpha", text: "A", version: 1, url: "https://lf.example.com/x" },
+      ],
+    }).deps;
+    const d: PromptServiceDeps = {
+      ...base,
+      now: () => clock.now,
+      createLangfuse: (options) => {
+        const client = base.createLangfuse(options);
+        return {
+          ...client,
+          async listTextPrompts(label) {
+            listCalls += 1;
+            return client.listTextPrompts(label);
+          },
+        };
+      },
+    };
+    return { d, calls: () => listCalls };
+  }
+
+  it("reuses the langfuse list across searches within 60 seconds", async () => {
+    const clock = { now: 0 };
+    const { d, calls } = counting(clock);
+    const service = createPromptService(d);
+    await service.search("a");
+    await service.search("al");
+    clock.now = 59_000;
+    await service.search("alp");
+    expect(calls()).toBe(1);
+    clock.now = 61_000;
+    await service.search("alph");
+    expect(calls()).toBe(2);
+  });
+
+  it("refetches when the list is requested fresh", async () => {
+    const clock = { now: 0 };
+    const { d, calls } = counting(clock);
+    const service = createPromptService(d);
+    await service.search("a");
+    await service.list({ fresh: true });
+    expect(calls()).toBe(2);
+  });
+});

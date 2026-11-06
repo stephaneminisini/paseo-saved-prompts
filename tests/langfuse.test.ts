@@ -180,3 +180,50 @@ describe("testConnection", () => {
     });
   });
 });
+
+describe("listTextPrompts resilience", () => {
+  it("skips a prompt deleted between listing and fetching it", async () => {
+    const { baseUrl } = await startServer((url, response) => {
+      if (url.pathname === "/api/public/v2/prompts") {
+        json(response, 200, {
+          data: [{ name: "PR review" }, { name: "gone" }],
+          meta: { page: 1, totalPages: 1 },
+        });
+        return;
+      }
+      langfuseStub(url, response);
+    });
+    const prompts = await createLangfuseClient({ baseUrl, keys: KEYS }).listTextPrompts(
+      "production",
+    );
+    expect(prompts.map((prompt) => prompt.name)).toEqual(["PR review"]);
+  });
+
+  it("fetches at most five prompt details at a time", async () => {
+    let inFlight = 0;
+    let peak = 0;
+    const names = Array.from({ length: 12 }, (_, index) => `p${index}`);
+    const { baseUrl } = await startServer((url, response) => {
+      if (url.pathname === "/api/public/projects") {
+        json(response, 200, { data: [{ id: "proj-1", name: "Acme" }] });
+        return;
+      }
+      if (url.pathname === "/api/public/v2/prompts") {
+        json(response, 200, { data: names.map((name) => ({ name })), meta: { page: 1, totalPages: 1 } });
+        return;
+      }
+      inFlight += 1;
+      peak = Math.max(peak, inFlight);
+      const name = decodeURIComponent(url.pathname.split("/").pop() ?? "");
+      setTimeout(() => {
+        inFlight -= 1;
+        json(response, 200, { name, version: 1, type: "text", prompt: name });
+      }, 20);
+    });
+    const prompts = await createLangfuseClient({ baseUrl, keys: KEYS }).listTextPrompts(
+      "production",
+    );
+    expect(prompts).toHaveLength(12);
+    expect(peak).toBeLessThanOrEqual(5);
+  });
+});

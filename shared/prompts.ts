@@ -25,7 +25,7 @@ export const searchPromptsRpc = defineRpc({
 
 export const listPromptsRpc = defineRpc({
   name: "prompts.list",
-  input: z.object({}),
+  input: z.object({ fresh: z.boolean().optional() }),
   output: z.object({
     mode: z.enum(["local", "langfuse"]),
     prompts: z.array(SavedPromptSchema),

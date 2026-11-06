@@ -29,6 +29,7 @@ export interface LangfuseClientOptions {
 }
 
 const PAGE_LIMIT = 50;
+const DETAIL_CONCURRENCY = 5;
 
 const ProjectsSchema = z.object({
   data: z.array(z.object({ id: z.string(), name: z.string() })).min(1),
@@ -112,20 +113,40 @@ export function createLangfuseClient(options: LangfuseClientOptions): LangfuseCl
     }
   }
 
+  /** Fetches one prompt; null when it was deleted after it was listed. */
+  async function fetchPrompt(name: string, label: string): Promise<z.infer<typeof PromptSchema> | null> {
+    try {
+      return await getJson(
+        `/api/public/v2/prompts/${encodeURIComponent(name)}?${new URLSearchParams({ label })}`,
+        PromptSchema,
+      );
+    } catch (error) {
+      if (error instanceof LangfuseError && error.status === 404) return null;
+      throw error;
+    }
+  }
+
+  async function fetchPrompts(names: string[], label: string) {
+    const results: Array<z.infer<typeof PromptSchema> | null> = new Array(names.length).fill(null);
+    let next = 0;
+    async function worker() {
+      while (next < names.length) {
+        const index = next;
+        next += 1;
+        results[index] = await fetchPrompt(names[index] as string, label);
+      }
+    }
+    await Promise.all(Array.from({ length: Math.min(DETAIL_CONCURRENCY, names.length) }, worker));
+    return results;
+  }
+
   return {
     async listTextPrompts(label) {
       const project = await firstProject();
       const names = await listNames(label);
-      const prompts = await Promise.all(
-        names.map((name) =>
-          getJson(
-            `/api/public/v2/prompts/${encodeURIComponent(name)}?${new URLSearchParams({ label })}`,
-            PromptSchema,
-          ),
-        ),
-      );
+      const prompts = await fetchPrompts(names, label);
       return prompts.flatMap((prompt): SavedPrompt[] =>
-        prompt.type === "text"
+        prompt?.type === "text"
           ? [
               {
                 id: `${prompt.name}@${prompt.version}`,

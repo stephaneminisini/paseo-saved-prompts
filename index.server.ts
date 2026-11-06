@@ -25,7 +25,7 @@ export default function contribute(server: PluginServerContext) {
   });
 
   server.handle(searchPromptsRpc, ({ query }) => service.search(query));
-  server.handle(listPromptsRpc, () => service.list());
+  server.handle(listPromptsRpc, ({ fresh }) => service.list({ fresh }));
   server.handle(testLangfuseRpc, () => service.testLangfuse());
   return () => {};
 }
