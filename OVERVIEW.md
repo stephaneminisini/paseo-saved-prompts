@@ -1,29 +1,40 @@
-<!--
-OVERVIEW.md is required to list your plugin in the registry. Keep it beside
-paseo-plugin.json in your repository at the pinned commit and in your npm package.
-Replace this comment with useful facts before publishing.
+# Saved Prompts
 
-This overview is for people choosing a plugin in Paseo, on the plugin page under
-its install command. README assumes a GitHub audience and includes technical
-details, installation instructions, and badges. Long, AI-generated READMEs leave
-people reading past that material to understand what the plugin does.
+Saved Prompts keeps the prompts you run again and again, such as a PR review, release prep, or a
+triage checklist, and lets you attach one to the first message of a new workspace. Open
+**New workspace**, choose the project, branch, and agent as usual, then pick **Attach > Saved
+prompt**. The prompt text goes to the agent with anything you type, so it works the same for
+Claude, Codex, and other providers.
 
-Write these parts in order, including only what helps someone decide to install:
+## Where prompts are stored
 
-1. Describe what your plugin is and does in plain terms first.
-2. Explain how it works only when it is not obvious.
-3. Explain setup when needed: settings, accounts, tokens, providers, tools, or
-   other plugins. Include applicable daemon version and operating system
-   requirements. Setup guidance is allowed; installation instructions are not.
-4. Explain capabilities and settings worth understanding, what each option does,
-   what the plugin reads or sends and where, permissions, and known limits.
+Choose the storage in the plugin settings.
 
-Length follows complexity; a theme needs one paragraph. Choose headings only
-when they help. Use sentence case and plain factual language, with no em dashes.
-Omit installation commands, badges, changelog, contributing or license sections,
-marketing, and unsupported claims. Avoid implementation filler such as empty
-cleanup functions, theme-token field lists, or lists of absent features.
+- **Local** (default): prompts live on the Paseo host. Create, edit, and delete them on the
+  **Prompts** screen in the sidebar. Each host has its own list; a prompt saved on one host does
+  not appear on another.
+- **Langfuse**: prompts are read from a Langfuse instance, using the version that carries the
+  label you choose (`production` by default). The Prompts screen is read-only; edit prompts in
+  Langfuse. Only text prompts are listed; chat prompts are skipped. Use this mode to share the
+  same prompts across several hosts.
 
-To translate the overview, add a whole copy beside this file named for the
-language, such as OVERVIEW.zh-CN.md. Readers in that language see it instead.
--->
+## Langfuse setup
+
+Set the Langfuse base URL and label in the plugin settings. The plugin reads your Langfuse keys
+from a file on the daemon machine, never from the app or the settings. By default the file is
+`~/.config/paseo-saved-prompts/langfuse.env`:
+
+```
+LANGFUSE_PUBLIC_KEY=pk-lf-...
+LANGFUSE_SECRET_KEY=sk-lf-...
+```
+
+The file must be readable only by you (`chmod 600`); the plugin refuses it otherwise. Use **Test
+connection** in the settings to check the URL and keys. The plugin calls only the Langfuse API at
+the URL you set.
+
+## Limits
+
+- Prompts are sent as written. `{{placeholders}}` are not filled in; type extra context next to
+  the attached prompt.
+- Removing the plugin deletes its local prompts on that host.
