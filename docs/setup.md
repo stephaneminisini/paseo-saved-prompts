@@ -12,6 +12,28 @@ paseo plugin ls            # saved-prompts should be running
 After editing the source, run `npm run typecheck` and `paseo plugin reload saved-prompts`. Do not
 restart the daemon to pick up changes.
 
+## Remote hosts
+
+Install and configure the plugin on every host where you start workspaces. Plugins, their
+settings, local prompts, and the Langfuse key file all live on each daemon machine; nothing is
+shared between hosts.
+
+1. Enable plugins on that daemon (**Settings > Plugins > Enable plugins** while connected to it).
+2. Install from GitHub; the daemon reads the files on its own machine:
+
+   ```bash
+   paseo --host <url> plugin install github:stephaneminisini/paseo-saved-prompts
+   paseo --host <url> plugin ls
+   ```
+
+3. Configure it on that host: open **Settings > Plugins > Saved Prompts** while connected to it.
+4. For Langfuse mode, create the [key file](#langfuse-key-file) on that machine, as the user the
+   daemon runs as.
+5. To update later: `paseo --host <url> plugin update saved-prompts`.
+
+Local prompts saved on one host never appear on another. To use the same prompts on every host,
+choose Langfuse storage on each host.
+
 ## Langfuse key file
 
 Create the key file on the daemon machine. The default path is

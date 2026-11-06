@@ -18,12 +18,28 @@ Choose the storage in the plugin settings.
   Langfuse. Only text prompts are listed; chat prompts are skipped. Use this mode to share the
   same prompts across several hosts.
 
+## Using several hosts
+
+Paseo plugins run per host. Each host where you start workspaces needs the plugin installed and
+configured on its own:
+
+- **Settings are per host.** Storage mode, Langfuse URL, label, and key file path are set
+  separately on each host.
+- **The key file is per machine.** In Langfuse mode, each host's daemon machine needs its own key
+  file.
+- **Local prompts stay on the host that saved them.** The **Attach > Saved prompt** picker only
+  shows prompts from the host the new workspace runs on, so a prompt saved on your desktop does
+  not appear when you start a workspace on another machine.
+
+To use the same prompts on every host, choose Langfuse storage on each host. They all read the
+same list from Langfuse.
+
 ## Langfuse setup
 
 The base URL defaults to Langfuse Cloud (US, `https://us.cloud.langfuse.com`); change it for the
 EU region (`https://cloud.langfuse.com`) or a self-hosted instance. Set the label in the plugin
-settings. The plugin reads your Langfuse keys
-from a file on the daemon machine, never from the app or the settings. By default the file is
+settings. The plugin reads your Langfuse keys from a file on the daemon machine, never from the
+app or the settings. By default the file is
 `~/.config/paseo-saved-prompts/langfuse.env`:
 
 ```
