@@ -1,11 +1,13 @@
 import { defineSettings } from "@getpaseo/plugin";
 import { z } from "zod";
 
+/** Langfuse Cloud, EU region (the Langfuse SDK default). US region: https://us.cloud.langfuse.com */
+export const DEFAULT_LANGFUSE_BASE_URL = "https://cloud.langfuse.com";
 export const DEFAULT_KEY_FILE_PATH = "~/.config/paseo-saved-prompts/langfuse.env";
 
 export const ConfigSchema = z.object({
   mode: z.enum(["local", "langfuse"]).default("local"),
-  langfuseBaseUrl: z.string().trim().default(""),
+  langfuseBaseUrl: z.string().trim().default(DEFAULT_LANGFUSE_BASE_URL),
   langfuseLabel: z.string().trim().min(1, "Enter a label").default("production"),
   keyFilePath: z.string().trim().min(1, "Enter the key file path").default(DEFAULT_KEY_FILE_PATH),
 });

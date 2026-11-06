@@ -35,7 +35,9 @@ is refused.
 Open **Settings > Plugins > Saved Prompts > Storage**:
 
 1. Choose **Local** or **Langfuse**.
-2. For Langfuse, set the base URL (for example `https://langfuse.example.com`) and the label.
+2. For Langfuse, check the base URL and the label. The URL defaults to Langfuse Cloud EU
+   (`https://cloud.langfuse.com`); use `https://us.cloud.langfuse.com` for the US region or your
+   own URL when self-hosted.
 3. Save, then use **Test connection**.
 
 Local and Langfuse prompts are separate. Switching modes does not copy prompts between them.
