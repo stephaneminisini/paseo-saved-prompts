@@ -40,6 +40,8 @@ function StorageForm({ settings, theme }: { settings: ReadyConfig } & Pick<Plugi
   }
 
   const dirty = isConfigDirty(draft, settings.values);
+  // Langfuse fields only apply in Langfuse mode; grey them out while Local is selected.
+  const langfuseOff = draft.mode === "local";
   // Adopt a newer revision once the saved values match the draft, as after our own save.
   useEffect(() => {
     if (!dirty) setRevision(settings.revision);
@@ -80,21 +82,21 @@ function StorageForm({ settings, theme }: { settings: ReadyConfig } & Pick<Plugi
             hint="Langfuse Cloud US by default. EU: https://cloud.langfuse.com. Self-hosted: your instance URL."
             placeholder="https://us.cloud.langfuse.com"
             initialValue={draft.langfuseBaseUrl}
-            disabled={settings.saving}
+            disabled={settings.saving || langfuseOff}
             onChangeText={(langfuseBaseUrl) => update({ langfuseBaseUrl })}
           />
           <SettingsInput
             label="Label"
             hint="The prompt version carrying this label is used."
             initialValue={draft.langfuseLabel}
-            disabled={settings.saving}
+            disabled={settings.saving || langfuseOff}
             onChangeText={(langfuseLabel) => update({ langfuseLabel })}
           />
           <SettingsInput
             label="Key file path"
             hint="Path on the daemon machine."
             initialValue={draft.keyFilePath}
-            disabled={settings.saving}
+            disabled={settings.saving || langfuseOff}
             onChangeText={(keyFilePath) => update({ keyFilePath })}
           />
           <SettingsRow
@@ -105,7 +107,7 @@ function StorageForm({ settings, theme }: { settings: ReadyConfig } & Pick<Plugi
             label="Test connection"
             hint="Uses the saved settings and the key file."
             actionLabel={test.status === "running" ? "Testing…" : "Test"}
-            disabled={test.status === "running" || dirty}
+            disabled={test.status === "running" || dirty || langfuseOff}
             onPress={() => void runTest()}
           />
         </SettingsCard>
